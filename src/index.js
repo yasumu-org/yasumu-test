@@ -11,6 +11,16 @@ export function test(name, cb) {
   };
 
   cb({ skip: () => void test["skipped"] = true })
+
+  if (test.skipped) {
+    return console.log(`${test.name} - Skipped`);
+  }
+
+  if (test.test.passed) {
+    console.log(`${test.name} - Passed`);
+  } else {
+    console.error(`${test.name} - Failed\n- Expected: ${test.test.expected}\n+ Received: ${test.test.received}`);
+  }
 }
 
 export { test as it };
