@@ -1,43 +1,41 @@
 let tests = [];
 let globalId = 0;
 
-function set(id, test) {
-  tests[id] = {...test[id], test }
-}
-
 export function test(name, cb) {
-  let test = tests[globalId++] = {
-    name
-  };
+    let test = {
+        name
+    };
 
-  cb({ skip: () => void test["skipped"] = true })
+    tests[globalId++] = test;
 
-  if (test.skipped) {
-    return console.log(`${test.name} - Skipped`);
-  }
+    cb({ skip: () => void (test["skipped"] = true) })
 
-  if (test.test.passed) {
-    console.log(`${test.name} - Passed`);
-  } else {
-    console.error(`${test.name} - Failed\n- Expected: ${test.test.expected}\n+ Received: ${test.test.received}`);
-  }
+    if (test.skipped) {
+        return console.log(yellow(`${test.name} - Skipped\n`));
+    }
+
+    if (test.test.pass) {
+        return console.log(green(`${test.name} - Passed\n`));
+    } else {
+        return console.error(red(`${test.name} - Failed\n- Expected: ${test.test.expected}\n+ Received: ${test.test.received}\n`));
+    }
 }
 
 export { test as it };
 
 export function expect(value) {
-  let id = globalId;
+    let id = globalId - 1;
 
-  const current = tests[id];
+    const current = tests[id];
 
-  if (current.skipped) return;
-  
-  const assertion = {
-    toBe: (target) => {
-      const passed = target === value;
-      set(id, { pass: passed, expected: target, received: value });
-    }
-  };
+    if (current.skipped) return;
 
-  return assertion;
+    const assertion = {
+        toBe: (target) => {
+            const passed = target === value;
+            Object.assign(current, { test: { pass: passed, expected: target, received: value } });
+        }
+    };
+
+    return assertion;
 }
